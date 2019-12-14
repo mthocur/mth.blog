@@ -1,6 +1,6 @@
 @if(isset($category))
     @foreach($categories as $cat)
-    <option value="{{$cat->id}}" {{ ($selected == $cat->category_id ? 'disabled':'') }} {{ ($category->category_id == $cat->id ? 'selected':'') }}>
+    <option value="{{$cat->id}}" {{ ($category->id == $cat->id ? 'disabled':'') }} {{ ($category->category_id == $cat->id ? 'selected':'') }}>
         {{str_repeat("-",$depth).$cat->name}}
     </option>
     @if(count($cat->children) > 0)
