@@ -9,7 +9,7 @@ class Category extends Model
 {
     use Sluggable;
     
-    protected $fillable = ["name"];
+    protected $fillable = [ 'name', 'slug', 'category_id' ];
 
     /**
      * Return the sluggable configuration array for this model.

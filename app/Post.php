@@ -9,6 +9,10 @@ class Post extends Model
 {
     use Sluggable;
 
+    protected $fillable = [
+        'title', 'content', 'summary', 'user_id', 'featured_image',
+    ];
+
     /**
      * Return the sluggable configuration array for this model.
      *
@@ -30,7 +34,7 @@ class Post extends Model
      */
     public function categories()
     {
-        return $this->belongsToMany(Category::class,"post_category", "category_id", "post_id");
+        return $this->belongsToMany(Category::class,"post_category", "post_id", "category_id");
     }
 
     /**

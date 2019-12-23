@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Category;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -85,7 +86,6 @@ class CategoryController extends Controller
     {
         $categories = Category::with("children")->whereNull("category_id")->get();
 
-
         $category = Category::where("id",$id)->get()->first();
         if(is_null($category)){
             return back()->with("error","Girdi bulunamadı!");
@@ -134,6 +134,8 @@ class CategoryController extends Controller
         }
         $category->save();
 
+        Cache::tags("categories_all")->flush();
+
         return redirect(route("categoryMain"))->with("success", "Category successfully updated.");
     }
 
@@ -148,10 +150,11 @@ class CategoryController extends Controller
         try{
             $category = Category::find($id);
             $category->delete();
-
+            
         }catch(\Exception $ex){
             return redirect(route("categoryMain"))->with("error", "Some errors occured!"); 
         }
+        Cache::tags("categories_all")->flush();
         return redirect(route("categoryMain"))->with("success", "Category successfully deleted."); 
 
     }

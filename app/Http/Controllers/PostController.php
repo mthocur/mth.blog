@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Category;
 use App\Post;
 use App\PostView;
+use Facades\App\Repository\CategoriesRepository;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
@@ -28,7 +30,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        $categories = Category::with("children")->whereNull("category_id")->get();
+        $categories = CategoriesRepository::all();
 
         return view("admin.pages.posts.create")->with(["categories" => $categories]);
     }
@@ -52,7 +54,7 @@ class PostController extends Controller
         if ($validation->fails()) {
             return back()->withErrors($validation);
         }
-
+        
         try{
             
             $post = new Post();
@@ -66,8 +68,13 @@ class PostController extends Controller
             }
             $post->save();
             $post->categories()->sync($request->input("category_id"), false);
+            // flush cache of selected categories
+            foreach($request->input("category_id") as $cat_id){
+                Cache::tags('category_' . Category::where("id",$cat_id)->get()->first()->slug . '_posts')->flush();
+            }
+
         }catch(\Exception $ex){
-            return $ex;
+            dd($ex);
             return redirect(route("postMain"))->with("error", "Some errors occured.");
         }
         
@@ -83,7 +90,7 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        $categories = Category::with("children")->whereNull("category_id")->get();
+        $categories = CategoriesRepository::all();
         
         $post = Post::where("id", $id)->get()->first();
         
@@ -145,6 +152,13 @@ class PostController extends Controller
             }
             $post->save();
             $post->categories()->sync($request->input("category_id"), true);
+
+            Cache::tags("post_slug")->flush();
+            // flush cache of selected categories
+            foreach($request->input("category_id") as $cat_id){
+                Cache::tags('category_' . Category::where("id",$cat_id)->get()->first()->slug . '_posts')->flush();
+            }
+
         } catch (\Exception $ex) {
             return redirect(route("postMain"))->with("error", "Some errors occured.");
         }
@@ -186,4 +200,5 @@ class PostController extends Controller
         return datatables()->of($posts)
             ->make(true);
     }
+
 }

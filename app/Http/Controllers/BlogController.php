@@ -3,31 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Post;
-use App\Category;
 use App\PostView;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
+use Facades\App\Repository\PostsRepository;
+use Facades\App\Repository\CategoriesRepository;
 
 class BlogController extends Controller
 {
     /**
      * Blog posts list page.
-     *
+     * @param Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
     public function blog(Request $request)
     {
-        $per_page = 12;
-        $page = $request->has('page') ? $request->query('page') : 1;
+        $posts = PostsRepository::paginate($request);
 
-        $posts = Cache::remember('posts_' . 'page_' . $page, Carbon::now()->addHour(1), function() use( $per_page ) {
-            return Post::paginate( $per_page );
-        });
-
-        $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
-            return Category::with("children")->whereNull("category_id")->get();
-        });
+        $categories = CategoriesRepository::all();
 
         return view("blog")->with(["posts"=>$posts,"categories"=>$categories]);
     }
@@ -35,29 +27,22 @@ class BlogController extends Controller
     /**
      * List posts by category.
      *
+     * @param Illuminate\Http\Request $request
+     * @param string $slug
      * @return \Illuminate\View\View
      */
-    public function category($slug)
+    public function category(Request $request, $slug)
     {
-        $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
-            return Category::with("children")->whereNull("category_id")->get();
-        });
+        $categories = CategoriesRepository::all();
 
-        $category = Category::with("children")->where("slug",$slug)->get();
-        //dd($category->toArray());
+        $category = CategoriesRepository::get($slug);
+
         if(!$category){
             return redirect(route("404"));
         }
         
-        // nested category array to standart array
-        $cats_array = $this->categoryThreeToArray($category);
-        // get category id nums
-        $cat_ids = array_column($cats_array,"id");
-
         // get posts related to this category
-        $posts = Post::whereHas("categories", function($query) use ($cat_ids) {
-            $query->whereIn("categories.id",$cat_ids);
-        })->paginate(12);
+        $posts = PostsRepository::postIn($request, $category);
 
         return view("category")->with(["posts" => $posts,"categories"=>$categories,"activeCategory"=>$category->first()]);
 
@@ -71,11 +56,9 @@ class BlogController extends Controller
     public function post($slug)
     {
         try{
-            $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
-                return Category::with("children")->whereNull("category_id")->get();
-            });
+            $categories = CategoriesRepository::all();
 
-            $post = Post::where("slug",$slug)->get();
+            $post = PostsRepository::get($slug);
 
             PostView::createViewLog($post->first());
 
@@ -95,28 +78,4 @@ class BlogController extends Controller
 
     }
     
-    /**
-     * nested category three array to standart array
-     *
-     * @param mixed $array
-     * @param int $parent
-     * @param array $empty
-     * @return array
-     */
-    private function categoryThreeToArray($array, $parent = null, &$empty = [])
-    {
-        foreach ($array as $key => $row) {
-            
-            $empty[] = [
-                "id" => $row->id,
-                "category_id" => $parent
-            ];
-
-            if (count($row->children) > 0)
-                $this->categoryThreeToArray($row->children, $row->id, $empty);
-        }
-
-        return $empty;
-    }
-
 }
