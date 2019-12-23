@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Post;
 use App\Category;
 use App\PostView;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class BlogController extends Controller
 {
@@ -13,10 +16,18 @@ class BlogController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function blog()
+    public function blog(Request $request)
     {
-        $posts = Post::paginate(12);
-        $categories = Category::with("children")->whereNull("category_id")->get();
+        $per_page = 12;
+        $page = $request->has('page') ? $request->query('page') : 1;
+
+        $posts = Cache::remember('posts_' . 'page_' . $page, Carbon::now()->addHour(1), function() use( $per_page ) {
+            return Post::paginate( $per_page );
+        });
+
+        $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
+            return Category::with("children")->whereNull("category_id")->get();
+        });
 
         return view("blog")->with(["posts"=>$posts,"categories"=>$categories]);
     }
@@ -28,8 +39,9 @@ class BlogController extends Controller
      */
     public function category($slug)
     {
-
-        $categories = Category::with("children")->whereNull("category_id")->get();
+        $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
+            return Category::with("children")->whereNull("category_id")->get();
+        });
 
         $category = Category::with("children")->where("slug",$slug)->get();
         //dd($category->toArray());
@@ -59,7 +71,9 @@ class BlogController extends Controller
     public function post($slug)
     {
         try{
-            $categories = Category::with("children")->whereNull("category_id")->get();
+            $categories = Cache::remember('categories.all', Carbon::now()->addHour(1), function() {
+                return Category::with("children")->whereNull("category_id")->get();
+            });
 
             $post = Post::where("slug",$slug)->get();
 
