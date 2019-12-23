@@ -162,12 +162,12 @@ class CategoryController extends Controller
      * @return string string contains datatables json data
      */
     public function ajax(){
-
+        
         $categories = Category::with("parent")->get()->toArray();
         // parent array dönmekte bu arrayın tamamına ihtiyacımız yok
         // bu yüzden sadece parent category name parent olarak güncelleniyor
         foreach($categories as $key=>$category){
-            $categories[$key]["parent"] = $categories[$key]["parent"]["name"];
+            $categories[$key]["parent"] = $categories[$key]["parent"]["name"] ?? "";
         }
 
         return datatables()->of($categories)
