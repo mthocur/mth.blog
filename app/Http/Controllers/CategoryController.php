@@ -60,6 +60,7 @@ class CategoryController extends Controller
             $category->parent()->associate($parent_category->id);
         }
         $category->save();
+        Cache::tags("categories_all")->flush();
 
         return redirect(route("categoryMain"))->with("success", "Category successfully inserted."); 
 

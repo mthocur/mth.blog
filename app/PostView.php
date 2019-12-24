@@ -37,7 +37,7 @@ class PostView extends Model
     {
         $postsViews = new PostView();
         $postsViews->post()->associate($post->id);
-        $postsViews->user()->associate(\Auth::user()->id);
+        $postsViews->user()->associate(\Auth::user()->id ?? null);
         $postsViews->session_id = \Request::getSession()->getId() ?? null;
         $postsViews->ip = \Request::getClientIp();
         $postsViews->agent = \Request::header('User-Agent');
