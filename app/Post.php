@@ -9,9 +9,7 @@ class Post extends Model
 {
     use Sluggable;
 
-    protected $fillable = [
-        'title', 'content', 'summary', 'user_id', 'featured_image',
-    ];
+    protected $guarded = [];
 
     /**
      * Return the sluggable configuration array for this model.
@@ -48,6 +46,15 @@ class Post extends Model
     }
 
     /**
+     * Post/Comments Polymorphic relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function comments(){
+        return $this->morphMany(Comment::class,"commentable");
+    }
+
+    /**
      * When model is booting
      * Delete relations recursively
      *
@@ -56,12 +63,11 @@ class Post extends Model
     public static function boot()
     {
         parent::boot();
-        
+
         static::deleting(function ($post) {
 
             $post->categories()->sync([]);
         });
-
-
     }
+
 }

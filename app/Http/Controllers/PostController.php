@@ -54,9 +54,9 @@ class PostController extends Controller
         if ($validation->fails()) {
             return back()->withErrors($validation);
         }
-        
+
         try{
-            
+
             $post = new Post();
             $post->title = $request->input("title");
             $post->content = $request->input("content");
@@ -72,12 +72,13 @@ class PostController extends Controller
             foreach($request->input("category_id") as $cat_id){
                 Cache::tags('category_' . Category::where("id",$cat_id)->get()->first()->slug . '_posts')->flush();
             }
+            Cache::tags("posts")->flush();
 
         }catch(\Exception $ex){
             dd($ex);
             return redirect(route("postMain"))->with("error", "Some errors occured.");
         }
-        
+
 
         return redirect(route("postMain"))->with("success", "Post successfully inserted.");
     }
@@ -91,9 +92,9 @@ class PostController extends Controller
     public function edit($id)
     {
         $categories = CategoriesRepository::all();
-        
+
         $post = Post::where("id", $id)->get()->first();
-        
+
         // get only category ids of post (for using in_array in blade template)
         $key = "id";
         $category_ids = array_map(function ($item) use ($key) {
@@ -103,14 +104,14 @@ class PostController extends Controller
         if (is_null($post)) {
             return back()->with("error", "Girdi bulunamadı!");
         }
-        
+
         $selected = array();
         foreach($category_ids as $cat_id){
             if(in_array($cat_id, $category_ids)){
                 $selected[] = $cat_id;
             }
         }
-        
+
         return view("admin.pages.posts.edit")->with([
             "post" => $post,
             "categories" => $categories,
@@ -139,7 +140,7 @@ class PostController extends Controller
         }
 
         try {
-            
+
             $post = Post::find($id);
             $post->title = $request->input("title");
             $post->content = $request->input("content");
@@ -158,6 +159,7 @@ class PostController extends Controller
             foreach($request->input("category_id") as $cat_id){
                 Cache::tags('category_' . Category::where("id",$cat_id)->get()->first()->slug . '_posts')->flush();
             }
+            Cache::tags("posts")->flush();
 
         } catch (\Exception $ex) {
             return redirect(route("postMain"))->with("error", "Some errors occured.");

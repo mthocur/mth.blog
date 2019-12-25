@@ -60,7 +60,7 @@
             <!-- /.container -->
         </div>
         <div class="col-md-3">
-            @include("inc.categoryMenu",['categories' => $categories])
+            @include("inc.categories.menu",['categories' => $categories])
         </div>
     </div>
 </div>

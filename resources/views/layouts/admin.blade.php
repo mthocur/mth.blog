@@ -234,6 +234,9 @@
                 <li class="{{ Request::is('admin/post/list') ? 'active' : '' }}">
                     <a href="{{url('admin/post/list')}}">Posts</a>
                 </li>
+                <li class="{{ Request::is('admin/comment/list') ? 'active' : '' }}">
+                    <a href="{{url('admin/comment/list')}}">Comments</a>
+                </li>
             </ul>
 
             <ul class="list-unstyled CTAs">

@@ -25,6 +25,7 @@ Route::get('/home', 'BlogController@blog')->name('home');
 
 Route::get('/blog', 'BlogController@blog')->name('blogList');
 Route::get('/blog/post/{slug}', 'BlogController@post')->name('blogPost');
+Route::post('/blog/comments/create/{post_id}', 'CommentController@make')->name('writeComment');
 Route::get('/blog/category/{slug}', 'BlogController@category')->name('blogCategory');
 
 
@@ -52,5 +53,14 @@ Route::group(['prefix' => 'admin',  'middleware' => 'auth'], function () {
         Route::get('/list', "PostController@index")->name("postIndex");
         Route::get('/listAjax', "PostController@ajax")->name("postAjax");
         Route::get('/delete/{id}', "PostController@destroy")->name("postDestroy");
+    });
+
+    Route::prefix('/comment')->group(function () {
+        Route::get('/', "CommentController@index")->name("commentMain");
+        Route::get('/edit/{id}', "CommentController@edit")->name("commentEdit");
+        Route::post('/update/{id}', "CommentController@update")->name("commentUpdate");
+        Route::get('/list', "CommentController@index")->name("commentIndex");
+        Route::get('/listAjax', "CommentController@ajax")->name("commentAjax");
+        Route::get('/delete/{id}', "CommentController@destroy")->name("commentDestroy");
     });
 });

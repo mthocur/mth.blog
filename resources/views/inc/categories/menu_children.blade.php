@@ -8,7 +8,7 @@
     @if ($child_category->categories)
         <div class="list-group">
             @foreach ($child_category->categories as $sub_cat)
-                @include('inc.subCategories', [
+                @include('inc.menu_children', [
                     'child_category' => $sub_cat,
                     'depth'=>$depth,
                     'activeCategory'=>$activeCategory

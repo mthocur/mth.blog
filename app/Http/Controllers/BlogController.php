@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Post;
 use App\PostView;
+use App\Comment;
+use App\Post;
 use Illuminate\Http\Request;
 use Facades\App\Repository\PostsRepository;
 use Facades\App\Repository\CategoriesRepository;
+use Facades\App\Repository\CommentsRepository;
 
 class BlogController extends Controller
 {
@@ -40,7 +42,7 @@ class BlogController extends Controller
         if(!$category){
             return redirect(route("404"));
         }
-        
+
         // get posts related to this category
         $posts = PostsRepository::postIn($request, $category);
 
@@ -53,7 +55,7 @@ class BlogController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function post($slug)
+    public function post(Request $request,$slug)
     {
         try{
             $categories = CategoriesRepository::all();
@@ -61,21 +63,24 @@ class BlogController extends Controller
             $post = PostsRepository::get($slug);
 
             PostView::createViewLog($post->first());
+            $comments = CommentsRepository::getPostComments($request,$post->first()->slug);
 
             if(!$post){
                 return redirect(route("404"));
             }
-
             $related = Post::orderByRaw('RAND()')->where("id","!=",$post->first()->id)->take(4)->get();
         } catch (\Exception $ex) {
+            dd($ex);
             return redirect(route("404"));
         }
+
         return view("detail")->with([
             "post" => $post->first(),
+            "comments"=>$comments,
             "categories"=>$categories,
             "related"=>$related
         ]);
 
     }
-    
+
 }

@@ -7,7 +7,7 @@
     </a>
     <div class="list-group">
         @foreach ($category->children as $sub_cat)
-        @include('inc.subCategories', [
+        @include('inc.categories.menu_children', [
         'child_category' => $sub_cat,
         "depth"=>0
         ])

@@ -21,7 +21,7 @@ class PostsRepository{
         $page = $request->has('page') ? $request->query('page') : 1;
         $per_page = $this->per_page;
 
-        return Cache::remember('posts_' . 'page_' . $page, Carbon::now()->addHour(1), function() use( $per_page ) {
+        return Cache::tags("posts")->remember('posts_' . 'page_' . $page, Carbon::now()->addHour(1), function() use( $per_page ) {
             return Post::paginate( $per_page );
         });
     }
@@ -43,7 +43,7 @@ class PostsRepository{
      *
      * @param Illuminate\Http\Request $request
      * @param App\Category $category
-     * @return Illuminate\Database\Eloquent\Collection 
+     * @return Illuminate\Database\Eloquent\Collection
      */
     public function postIn(Request $request, $category){
 
