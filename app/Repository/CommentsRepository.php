@@ -24,7 +24,7 @@ class CommentsRepository{
         $post = PostsRepository::get($postSlug);
 
         return Cache::tags("comments_post")->remember('comments_post_'.$post->first()->id . '_page_' . $page, Carbon::now()->addHour(1), function() use( $per_page, $post ) {
-            return Comment::with("replies")->where("commentable_id",$post->first()->id)->whereNull("comment_id")->paginate($per_page);
+            return Comment::with("replies")->where("commentable_id",$post->first()->id)->whereNull("comment_id")->where("status",1)->paginate($per_page);
         });
 
     }
