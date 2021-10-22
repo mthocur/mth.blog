@@ -26,6 +26,6 @@
         "datatables.net": "^1.10.20",
         "datatables.net-bs": "^1.10.20",
         "datatables.net-bs4": "^1.10.20",
-        "tinymce": "^5.1.4"
+        "tinymce": "^5.9.0"
     }
 }
